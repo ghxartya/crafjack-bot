@@ -15,6 +15,8 @@ import authScene from '@/scenes/authScene'
 
 import type { MyContext } from '@/types'
 
+import { launch, stop } from '@/utils/bot'
+
 dotenv.config()
 
 const bot = new Telegraf<MyContext>(process.env.BOT_TOKEN!)
@@ -48,7 +50,15 @@ bot.hears(MAIN_BUTTONS.STATISTICS, ctx => ctx.reply('Статистика - soon
 bot.hears(MAIN_BUTTONS.WAREHOUSE, ctx => ctx.reply('Склад - soon'))
 
 bot.on(message('text'), ctx => ctx.reply('Используйте меню ниже', mainKeyboard))
-bot.launch()
 
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+void (async () => {
+  try {
+    await launch(bot)
+    console.log('Bot launched successfully.')
+  } catch (error) {
+    console.error('Failed to launch bot:', error)
+    process.exit(1)
+  }
+})()
+
+stop(bot)

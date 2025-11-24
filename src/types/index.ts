@@ -1,4 +1,4 @@
-import type { Context, Scenes } from 'telegraf'
+import type { Context, Scenes, Telegraf } from 'telegraf'
 
 export interface MyWizardSessionData extends Scenes.WizardSessionData {}
 export interface MySceneSession
@@ -9,3 +9,5 @@ export type MyContext = Context & {
   scene: Scenes.SceneContextScene<MyContext, MyWizardSessionData>
   wizard: Scenes.WizardContextWizard<MyContext>
 }
+
+export type Bot = Telegraf<MyContext>

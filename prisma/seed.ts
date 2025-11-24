@@ -10,8 +10,8 @@ async function main() {
 }
 
 main()
-  .catch(async e => {
-    console.error(e)
+  .catch(async error => {
+    console.error(error)
     await prisma.$disconnect()
     process.exit(1)
   })
