@@ -3,7 +3,13 @@ import type { Bot } from '@/types'
 export function launch(bot: Bot) {
   if (process.env.ENV_NAME === 'production') {
     console.log('Running bot in production mode...')
-    bot.launch()
+    bot.launch({
+      webhook: {
+        domain: process.env.DOMAIN!,
+        port: Number(process.env.PORT!),
+        secretToken: bot.secretPathComponent()
+      }
+    })
   } else {
     console.log('Running bot in development mode...')
     bot.launch()
