@@ -1,19 +1,16 @@
-import type { Message } from 'telegraf/types'
+import { message } from 'telegraf/filters'
+
+import { UserService } from '@/services/userService'
 
 import type { MyContext } from '@/types'
-
-import { prisma } from '@/lib/prisma'
 
 export async function authMiddleware(
   ctx: MyContext,
   next: () => Promise<void>
 ) {
-  if ((ctx.message as Message.TextMessage)?.text === '/start') return next()
+  const telegramId = BigInt(ctx.from!.id)
+  if (ctx.has(message('text')) && ctx.message.text === '/start') return next()
 
-  const user = await prisma.user.findUnique({
-    where: { telegramId: BigInt(ctx.from!.id) }
-  })
-
-  if (!user?.isAuthenticated) return ctx.scene.enter('auth')
-  return next()
+  if (await UserService.isAuthenticated(telegramId)) return next()
+  else return ctx.scene.enter('auth')
 }

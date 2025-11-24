@@ -1,24 +1,12 @@
+import { UserService } from '@/services/userService'
+
+import { whitelistIds } from '@/config/users'
+
 import { prisma } from '@/lib/prisma'
 
 async function main() {
-  const allowedIds = [
-    403519902n,
-    536012447n,
-    622291718n,
-    631410667n,
-    980946239n
-  ]
-
-  for (const id of allowedIds)
-    await prisma.user.upsert({
-      where: { telegramId: id },
-      update: { isAuthenticated: true },
-      create: { telegramId: id, isAuthenticated: true }
-    })
-
-  console.log(
-    'Seeded allowed Telegram IDs as authenticated users. (Разрешено использование идентификаторов Telegram в качестве аутентифицированных пользователей.)'
-  )
+  for (const id of whitelistIds) await UserService.authenticate(id)
+  console.log('Seeded whitelisted Telegram IDs as authenticated users.')
 }
 
 main()

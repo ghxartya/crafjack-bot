@@ -1,31 +1,43 @@
 import { Scenes } from 'telegraf'
+import { message } from 'telegraf/filters'
 
-import { mainKeyboard } from '@/keyboards'
+import { cancelKeyboard, mainKeyboard, removeKeyboard } from '@/keyboards'
+
+import { CANCEL_BUTTON } from '@/constants'
+
+import { UserService } from '@/services/userService'
 
 import type { MyContext } from '@/types'
-
-import { prisma } from '@/lib/prisma'
 
 const authScene = new Scenes.WizardScene<MyContext>(
   'auth',
   async ctx => {
-    await ctx.reply('Okay, give me your password.')
+    await ctx.reply('Введите пароль для доступа к CRM:', cancelKeyboard)
     return ctx.wizard.next()
   },
   async ctx => {
-    const password = (ctx.message as { text: string })?.text?.trim()
+    if (!ctx.has(message('text'))) {
+      await ctx.reply('⚠️ Пожалуйста, отправьте пароль в текстовом сообщении.')
+      return
+    }
+
+    const password = ctx.message.text
+    const telegramId = BigInt(ctx.from.id)
+
+    if (password === CANCEL_BUTTON) {
+      await ctx.reply(
+        '⚠️ Авторизация отменена. Нажмите /start для повторной попытки.',
+        removeKeyboard
+      )
+      return ctx.scene.leave()
+    }
 
     if (password === process.env.AUTH_PASSWORD) {
-      await prisma.user.upsert({
-        where: { telegramId: BigInt(ctx.from!.id) },
-        update: { isAuthenticated: true },
-        create: { telegramId: BigInt(ctx.from!.id), isAuthenticated: true }
-      })
-
-      await ctx.reply('Авторизация прошла успешно!', mainKeyboard)
+      await UserService.authenticate(telegramId)
+      await ctx.reply('✅ Авторизация прошла успешно!', mainKeyboard)
       return ctx.scene.leave()
     } else {
-      await ctx.reply('Неверный пароль. Попробуйте ещё раз:')
+      await ctx.reply('❌ Неверный пароль. Попробуйте ещё раз:')
       return ctx.wizard.selectStep(1)
     }
   }

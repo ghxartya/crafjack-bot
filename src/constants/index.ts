@@ -1,8 +1,8 @@
 export const MAIN_BUTTONS = {
   SHIPMENTS: 'Отправки',
   ORDERS: 'Заказы',
-  WAREHOUSE: 'Склад',
-  STATISTICS: 'Статистика'
+  STATISTICS: 'Статистика',
+  WAREHOUSE: 'Склад'
 } as const
 
 export const BACK_BUTTON = 'Назад' as const

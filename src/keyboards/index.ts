@@ -7,4 +7,8 @@ export const mainKeyboard = Markup.keyboard(Object.values(MAIN_BUTTONS), {
 }).resize()
 
 export const backKeyboard = Markup.keyboard([BACK_BUTTON]).resize()
-export const cancelKeyboard = Markup.keyboard([CANCEL_BUTTON]).resize()
+export const cancelKeyboard = Markup.keyboard([CANCEL_BUTTON])
+  .resize()
+  .oneTime()
+
+export const removeKeyboard = Markup.removeKeyboard()
