@@ -51,9 +51,9 @@ bot.hears(MAIN_BUTTONS.WAREHOUSE, ctx => ctx.reply('Склад - soon'))
 
 bot.on(message('text'), ctx => ctx.reply('Используйте меню ниже', mainKeyboard))
 
-void (async () => {
+void (() => {
   try {
-    await launch(bot)
+    launch(bot)
     console.log('Bot launched successfully.')
   } catch (error) {
     console.error('Failed to launch bot:', error)
