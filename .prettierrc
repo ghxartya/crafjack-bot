@@ -12,6 +12,7 @@
     "^@/keyboards(/.*)?$",
     "^@/constants(/.*)?$",
     "^@/services(/.*)?$",
+    "^@/helpers(/.*)?$",
     "^@/scenes(/.*)?$",
     "^@/config(/.*)?$",
     "^@/prisma(/.*)?$",

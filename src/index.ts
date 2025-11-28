@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import 'dotenv/config'
 import { Scenes, Telegraf, session } from 'telegraf'
 import { message } from 'telegraf/filters'
 import 'tsconfig-paths/register'
@@ -9,56 +9,68 @@ import { mainKeyboard } from '@/keyboards'
 
 import { MAIN_BUTTONS } from '@/constants'
 
-import { UserService } from '@/services/userService'
+import { User } from '@/services/user'
 
-import authScene from '@/scenes/authScene'
+import { terminal } from '@/helpers/cmd'
+
+import authScene from '@/scenes/auth'
+import ordersScene from '@/scenes/orders'
+import shipmentsScene from '@/scenes/shipments'
+import statisticsScene from '@/scenes/statistics'
+import warehouseScene from '@/scenes/warehouse'
 
 import type { MyContext } from '@/types'
 
-import { launch, stop } from '@/utils/bot'
+import { isDev, launch, stop } from '@/utils/bot'
 
-dotenv.config()
+terminal.cmd(
+  isDev ? 'dev' : 'start',
+  isDev ? 'nodemon' : 'node dist/src',
+  () => {
+    const bot = new Telegraf<MyContext>(process.env.BOT_TOKEN!)
+    const stage = new Scenes.Stage<MyContext>([
+      authScene,
+      warehouseScene,
+      ordersScene,
+      shipmentsScene,
+      statisticsScene
+    ])
 
-const bot = new Telegraf<MyContext>(process.env.BOT_TOKEN!)
-const stage = new Scenes.Stage<MyContext>([authScene])
+    bot.use(
+      session({
+        defaultSession: () => ({
+          __scenes: { cursor: 0, state: {} }
+        })
+      })
+    )
+    bot.use(stage.middleware())
 
-bot.use(
-  session({
-    defaultSession: () => ({
-      __scenes: { cursor: 0, state: {} }
+    bot.start(async ctx => {
+      const name = ctx.from.first_name
+      const telegramId = BigInt(ctx.from.id)
+
+      if (await User.isAuthenticated(telegramId))
+        await ctx.reply(`👋 ${name}!`, mainKeyboard)
+      else {
+        await ctx.reply(`👋 ${name}, добро пожаловать!`)
+        return ctx.scene.enter('auth')
+      }
     })
-  })
-)
-bot.use(stage.middleware())
+    bot.use(authMiddleware)
 
-bot.start(async ctx => {
-  const name = ctx.from.first_name
-  const telegramId = BigInt(ctx.from.id)
+    bot.hears(MAIN_BUTTONS.SHIPMENTS, ctx => ctx.scene.enter('shipments'))
+    bot.hears(MAIN_BUTTONS.ORDERS, ctx => ctx.scene.enter('orders'))
+    bot.hears(MAIN_BUTTONS.STATISTICS, ctx => ctx.scene.enter('statistics'))
+    bot.hears(MAIN_BUTTONS.WAREHOUSE, ctx => ctx.scene.enter('warehouse'))
 
-  if (await UserService.isAuthenticated(telegramId))
-    return await ctx.reply(`👋 ${name}!`, mainKeyboard)
-  else {
-    await ctx.reply(`👋 ${name}, добро пожаловать!`)
-    return ctx.scene.enter('auth')
-  }
-})
-bot.use(authMiddleware)
+    bot.on(
+      message('text'),
+      async ctx =>
+        await ctx.reply('⚠️ Пожалуйста, используйте меню ниже.', mainKeyboard)
+    )
 
-bot.hears(MAIN_BUTTONS.SHIPMENTS, ctx => ctx.reply('Отправки - soon'))
-bot.hears(MAIN_BUTTONS.ORDERS, ctx => ctx.reply('Заказы - soon'))
-bot.hears(MAIN_BUTTONS.STATISTICS, ctx => ctx.reply('Статистика - soon'))
-bot.hears(MAIN_BUTTONS.WAREHOUSE, ctx => ctx.reply('Склад - soon'))
-
-bot.on(message('text'), ctx => ctx.reply('Используйте меню ниже', mainKeyboard))
-
-void (() => {
-  try {
     launch(bot)
-    console.log('Bot launched successfully.')
-  } catch (error) {
-    console.error('Failed to launch bot:', error)
-    process.exit(1)
-  }
-})()
-
-stop(bot)
+    stop(bot)
+  },
+  { start: true }
+)

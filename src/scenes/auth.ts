@@ -5,14 +5,14 @@ import { cancelKeyboard, mainKeyboard, removeKeyboard } from '@/keyboards'
 
 import { CANCEL_BUTTON } from '@/constants'
 
-import { UserService } from '@/services/userService'
+import { User } from '@/services/user'
 
 import type { MyContext } from '@/types'
 
 const authScene = new Scenes.WizardScene<MyContext>(
   'auth',
   async ctx => {
-    await ctx.reply('Введите пароль для доступа к CRM:', cancelKeyboard)
+    await ctx.reply('🔐 Введите пароль для доступа к CRM:', cancelKeyboard)
     return ctx.wizard.next()
   },
   async ctx => {
@@ -33,7 +33,7 @@ const authScene = new Scenes.WizardScene<MyContext>(
     }
 
     if (password === process.env.AUTH_PASSWORD) {
-      await UserService.authenticate(telegramId)
+      await User.authenticate(telegramId)
       await ctx.reply('✅ Авторизация прошла успешно!', mainKeyboard)
       return ctx.scene.leave()
     } else {
