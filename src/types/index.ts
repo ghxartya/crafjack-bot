@@ -10,3 +10,5 @@ export type MyContext = Context & {
   scene: Scenes.SceneContextScene<MyContext, MyWizardSessionData>
   wizard: Scenes.WizardContextWizard<MyContext>
 }
+
+export type KeyboardButtons = Record<string, string>

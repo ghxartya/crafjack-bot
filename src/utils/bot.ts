@@ -7,14 +7,12 @@ export function launch(bot: Bot) {
     'An error occured during post-launch process with reason —'
 
   if (process.env.ENV_NAME === 'production') {
-    terminal.inform('Running bot in webhook mode ...', {
-      end: true
-    })
+    terminal.inform('Running bot in webhook mode.')
 
     const domain = process.env.DOMAIN!
     const port = Number(process.env.PORT!)
 
-    terminal.informValue(['Webhook domain:', domain])
+    terminal.informValue(['Domain:', domain])
     terminal.informValue(['Port:', port])
 
     bot
@@ -30,7 +28,7 @@ export function launch(bot: Bot) {
         process.exit(1)
       })
   } else {
-    terminal.inform('Running bot in polling mode ...')
+    terminal.inform('Running bot in polling mode.')
 
     bot.launch().catch((error: Error) => {
       terminal.failureValue([errorMessage, error.message])

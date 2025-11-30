@@ -11,6 +11,8 @@ export async function authMiddleware(
   const telegramId = BigInt(ctx.from!.id)
   if (ctx.has(message('text')) && ctx.message.text === '/start') return next()
 
-  if (await User.isAuthenticated(telegramId)) return next()
+  const isAuthenticated = await User.isAuthenticated(telegramId)
+
+  if (isAuthenticated) return next()
   else return ctx.scene.enter('auth')
 }

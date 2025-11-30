@@ -1,14 +1,39 @@
 import { Markup } from 'telegraf'
 
-import { BACK_BUTTON, CANCEL_BUTTON, MAIN_BUTTONS } from '@/constants'
+import type { KeyboardButtons } from '@/types'
 
-export const mainKeyboard = Markup.keyboard(Object.values(MAIN_BUTTONS), {
-  columns: 2
-}).resize()
+export function buildKeyboard(
+  buttons: KeyboardButtons,
+  options: {
+    columns?: number
+  } = {}
+) {
+  const { columns = 2 } = options
+  const values = Object.values(buttons)
+  return Markup.keyboard(values, { columns }).resize()
+}
 
-export const backKeyboard = Markup.keyboard([BACK_BUTTON]).resize()
-export const cancelKeyboard = Markup.keyboard([CANCEL_BUTTON])
-  .resize()
-  .oneTime()
+export function buildInlineKeyboard(
+  buttons: KeyboardButtons,
+  options: {
+    columns?: number
+    prefix?: string
+  } = {}
+) {
+  const { columns = 1, prefix = '' } = options
+
+  const keys = Object.keys(buttons)
+  const values = Object.values(buttons)
+
+  return Markup.inlineKeyboard(
+    values.map((value, index) =>
+      Markup.button.callback(
+        value,
+        prefix ? `${prefix}:` + keys[index] : keys[index]
+      )
+    ),
+    { columns }
+  )
+}
 
 export const removeKeyboard = Markup.removeKeyboard()

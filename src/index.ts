@@ -5,9 +5,10 @@ import 'tsconfig-paths/register'
 
 import { authMiddleware } from '@/middleware/auth'
 
-import { mainKeyboard } from '@/keyboards'
+import { buildKeyboard } from '@/keyboards'
 
-import { MAIN_BUTTONS } from '@/constants'
+import { BUTTONS } from '@/constants/buttons'
+import { MESSAGES } from '@/constants/messages'
 
 import { User } from '@/services/user'
 
@@ -45,28 +46,35 @@ terminal.cmd(
     )
     bot.use(stage.middleware())
 
+    const { HOME } = MESSAGES
+    const { MAIN } = BUTTONS.HOME
+
     bot.start(async ctx => {
       const name = ctx.from.first_name
       const telegramId = BigInt(ctx.from.id)
 
-      if (await User.isAuthenticated(telegramId))
-        await ctx.reply(`👋 ${name}!`, mainKeyboard)
+      const isAuthenticated = await User.isAuthenticated(telegramId)
+
+      if (isAuthenticated)
+        await ctx.reply(
+          HOME.WELCOME(name, isAuthenticated),
+          buildKeyboard(MAIN)
+        )
       else {
-        await ctx.reply(`👋 ${name}, добро пожаловать!`)
+        await ctx.reply(HOME.WELCOME(name, isAuthenticated))
         return ctx.scene.enter('auth')
       }
     })
     bot.use(authMiddleware)
 
-    bot.hears(MAIN_BUTTONS.SHIPMENTS, ctx => ctx.scene.enter('shipments'))
-    bot.hears(MAIN_BUTTONS.ORDERS, ctx => ctx.scene.enter('orders'))
-    bot.hears(MAIN_BUTTONS.STATISTICS, ctx => ctx.scene.enter('statistics'))
-    bot.hears(MAIN_BUTTONS.WAREHOUSE, ctx => ctx.scene.enter('warehouse'))
+    bot.hears(MAIN.SHIPMENTS, ctx => ctx.scene.enter('shipments'))
+    bot.hears(MAIN.ORDERS, ctx => ctx.scene.enter('orders'))
+    bot.hears(MAIN.STATISTICS, ctx => ctx.scene.enter('statistics'))
+    bot.hears(MAIN.WAREHOUSE, ctx => ctx.scene.enter('warehouse'))
 
     bot.on(
       message('text'),
-      async ctx =>
-        await ctx.reply('⚠️ Пожалуйста, используйте меню ниже.', mainKeyboard)
+      async ctx => await ctx.reply(HOME.WARNING, buildKeyboard(MAIN))
     )
 
     launch(bot)

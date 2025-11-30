@@ -1,13 +1,15 @@
 import { Scenes } from 'telegraf'
 
-import { MAIN_BUTTONS } from '@/constants'
+import { MESSAGES } from '@/constants/messages'
 
 import type { MyContext } from '@/types'
+
+const { SHIPMENTS } = MESSAGES
 
 const statisticsScene = new Scenes.WizardScene<MyContext>(
   'statistics',
   async ctx => {
-    await ctx.reply(`${MAIN_BUTTONS.STATISTICS} — выберите действие:`)
+    await ctx.reply(SHIPMENTS.ENTRANCE)
     return ctx.wizard.next()
   }
 )

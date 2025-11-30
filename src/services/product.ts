@@ -8,15 +8,17 @@ import { prisma } from '@/lib/prisma'
 
 export const Product = {
   async getProductsByCategory(categoryId: CategoryModel['id']) {
-    return prisma.product.findMany({
+    return await prisma.product.findMany({
       where: { categoryId },
+      include: { color: true },
       orderBy: { name: 'asc' }
     })
   },
 
   async getProductStock(productId: ProductStockModel['id']) {
-    return prisma.productStock.findMany({
+    return await prisma.productStock.findMany({
       where: { productId },
+      include: { size: true },
       orderBy: { size: { name: 'asc' } }
     })
   },
@@ -24,17 +26,31 @@ export const Product = {
   async adjustStock(
     productId: ProductStockModel['productId'],
     sizeId: ProductStockModel['sizeId'],
-    quantity: ProductStockModel['quantity']
+    quantity: ProductStockModel['quantity'],
+    operation: 'increment' | 'decrement'
   ) {
-    return prisma.productStock.upsert({
+    return await prisma.productStock.upsert({
       where: { productId_sizeId: { productId, sizeId } },
-      update: { quantity: { increment: quantity } },
+      update: { quantity: { [operation]: quantity } },
       create: { productId, sizeId, quantity }
+    })
+  },
+
+  async createProduct(
+    name: ProductModel['name'],
+    categoryId: ProductModel['categoryId'],
+    colorId: ProductModel['colorId'],
+    comment: ProductModel['comment'],
+    cost: ProductModel['cost'],
+    costPrice: ProductModel['costPrice']
+  ) {
+    return await prisma.product.create({
+      data: { name, categoryId, colorId, comment, cost, costPrice }
     })
   },
 
   async deleteProduct(id: ProductModel['id']) {
     await prisma.productStock.deleteMany({ where: { productId: id } })
-    return prisma.product.delete({ where: { id } })
+    return await prisma.product.delete({ where: { id } })
   }
 }

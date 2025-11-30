@@ -14,7 +14,7 @@ import { prisma } from '@/lib/prisma'
 
 async function main() {
   for (const id of whitelistIds) await User.authenticate(id)
-  terminal.inform('Seeded users IDs as authenticated users.')
+  terminal.inform('Seeded user IDs for authenticated users.')
   for (const name of categories) await Category.append(name)
   terminal.inform('Seeded category names as new categories.')
   for (const name of colors) await Color.append(name)
