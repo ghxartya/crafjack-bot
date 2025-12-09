@@ -11,12 +11,12 @@ import { User } from '@/services/user'
 import type { MyContext } from '@/types'
 
 const { AUTH } = MESSAGES
-const { CANCEL, MAIN } = BUTTONS.HOME
+const { MAIN } = BUTTONS.AUTH
 
 const authScene = new Scenes.WizardScene<MyContext>(
   'auth',
   async ctx => {
-    await ctx.reply(AUTH.ENTRANCE, buildKeyboard(CANCEL))
+    await ctx.reply(AUTH.ENTRANCE, buildKeyboard(MAIN))
     return ctx.wizard.next()
   },
   async ctx => {
@@ -28,14 +28,14 @@ const authScene = new Scenes.WizardScene<MyContext>(
     const password = ctx.message.text
     const telegramId = BigInt(ctx.from.id)
 
-    if (password === CANCEL.TEXT) {
+    if (password === MAIN.CANCEL) {
       await ctx.reply(AUTH.CANCEL, removeKeyboard)
       return ctx.scene.leave()
     }
 
     if (password === process.env.AUTH_PASSWORD) {
       await User.authenticate(telegramId)
-      await ctx.reply(AUTH.VALID, buildKeyboard(MAIN))
+      await ctx.reply(AUTH.VALID, buildKeyboard(BUTTONS.HOME.MAIN))
       return ctx.scene.leave()
     } else {
       await ctx.reply(AUTH.INVALID)

@@ -1,6 +1,10 @@
 import type { Context, Scenes, Telegraf } from 'telegraf'
 
-export interface MyWizardSessionData extends Scenes.WizardSessionData {}
+import type { WarehouseSession } from './warehouse'
+
+export interface MyWizardSessionData extends Scenes.WizardSessionData {
+  warehouse?: WarehouseSession
+}
 export interface MySceneSession
   extends Scenes.SceneSession<MyWizardSessionData> {}
 

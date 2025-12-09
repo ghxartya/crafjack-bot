@@ -9,6 +9,12 @@ export const Color = {
     })
   },
 
+  async get(id: ColorModel['id']) {
+    return await prisma.color.findUnique({
+      where: { id }
+    })
+  },
+
   async append(name: ColorModel['name']) {
     return await prisma.color.upsert({
       where: { name },

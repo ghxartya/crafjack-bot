@@ -9,6 +9,12 @@ export const Category = {
     })
   },
 
+  async get(id: CategoryModel['id']) {
+    return await prisma.category.findUnique({
+      where: { id }
+    })
+  },
+
   async append(name: CategoryModel['name']) {
     return await prisma.category.upsert({
       where: { name },

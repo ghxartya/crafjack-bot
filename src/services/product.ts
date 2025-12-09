@@ -1,13 +1,18 @@
-import type {
-  Category as CategoryModel,
-  Product as ProductModel,
-  ProductStock as ProductStockModel
-} from '@/prisma/client'
+import type { Product as ProductModel } from '@/prisma/client'
+
+import type { AdjustStockParams, CreateProductParams } from '@/types/product'
 
 import { prisma } from '@/lib/prisma'
 
 export const Product = {
-  async getProductsByCategory(categoryId: CategoryModel['id']) {
+  async get(id: ProductModel['id']) {
+    return await prisma.product.findUnique({
+      where: { id },
+      include: { color: true, stocks: true }
+    })
+  },
+
+  async getProductsByCategory(categoryId: ProductModel['categoryId']) {
     return await prisma.product.findMany({
       where: { categoryId },
       include: { color: true },
@@ -15,20 +20,19 @@ export const Product = {
     })
   },
 
-  async getProductStock(productId: ProductStockModel['id']) {
-    return await prisma.productStock.findMany({
-      where: { productId },
-      include: { size: true },
-      orderBy: { size: { name: 'asc' } }
-    })
-  },
-
-  async adjustStock(
-    productId: ProductStockModel['productId'],
-    sizeId: ProductStockModel['sizeId'],
-    quantity: ProductStockModel['quantity'],
-    operation: 'increment' | 'decrement'
-  ) {
+  async adjustStock({
+    productId,
+    sizeId,
+    quantity,
+    operation
+  }: AdjustStockParams) {
+    if (operation === 'decrement') {
+      const current = await prisma.productStock.findUnique({
+        where: { productId_sizeId: { productId, sizeId } }
+      })
+      if (!current || current.quantity < quantity)
+        throw new Error('Недостаточно товара на складе!')
+    }
     return await prisma.productStock.upsert({
       where: { productId_sizeId: { productId, sizeId } },
       update: { quantity: { [operation]: quantity } },
@@ -36,14 +40,21 @@ export const Product = {
     })
   },
 
-  async createProduct(
-    name: ProductModel['name'],
-    categoryId: ProductModel['categoryId'],
-    colorId: ProductModel['colorId'],
-    comment: ProductModel['comment'],
-    cost: ProductModel['cost'],
-    costPrice: ProductModel['costPrice']
-  ) {
+  async createProduct({
+    name,
+    categoryId,
+    colorId,
+    comment,
+    cost,
+    costPrice
+  }: CreateProductParams) {
+    const exists = await prisma.product.findFirst({
+      where: { name, categoryId, colorId }
+    })
+    if (exists)
+      throw new Error(
+        'Товар с таким названием, категорией и цветом уже существует!'
+      )
     return await prisma.product.create({
       data: { name, categoryId, colorId, comment, cost, costPrice }
     })
