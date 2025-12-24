@@ -1,1 +1,1 @@
-# CRAFTECH CRM System - Telegram Bot
+# CRM System in Telegram Bot
